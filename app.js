@@ -1,8 +1,7 @@
 const express = require('express');
-const morgan = require('morgan');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
-const Blog = require('./models/blog');
+const blogRoutes = require('./routes/blogRoutes')
 
 const app = express(); // creating an instance of an express app
 
@@ -38,7 +37,6 @@ app.use((req, res, next) => {
 
 app.use(express.static('public')); // anything inside 'public' folder will be accessible by the browser
 app.use(express.urlencoded({ extended: true })); // allows us to get form data from client
-app.use(morgan('dev')); // third party middleware
 
 // routes/renders
 
@@ -50,56 +48,8 @@ app.get('/about', (req, res) => {
   res.render('about', { title: 'About' });
 });
 
-app.get('/blogs/create', (req, res) => {
-  res.render('create', { title: 'Create New Blog' });
-});
-
-app.get('/blogs', (req, res) => {
-  (async () => {
-    try {
-      const result = await Blog.find().sort({ createdAt: -1 });
-      res.render('index', { title: 'All Blogs', blogs: result }); // renders index.ejs from views folder
-    } catch (err) {
-      console.log(err);
-    }
-  })();
-});
-
-app.post('/blogs', (req, res) => { // create new blogs
-  const blog = new Blog(req.body);
-  (async () => {
-    try {
-      const result = await blog.save();
-      res.redirect('./blogs');
-    } catch (err) {
-      console.log(err);
-    }
-  })();
-});
-
-app.get('/blogs/:id', (req, res) => {
-  const id = req.params.id;
-  (async () => {
-    try {
-      const result = await Blog.findById(id);
-      res.render('details', { title: 'Blog Details', blog: result }); // renders details.ejs from views folder
-    } catch (err) {
-      console.log(err);
-    }
-  })();
-})
-
-app.delete('/blogs/:id', (req, res) => {
-  const id = req.params.id;
-  (async () => {
-    try {
-      const result = await Blog.findByIdAndDelete(id);
-      res.json({ redirect: '/blogs' })
-    } catch (err) {
-      console.log(err);
-    }
-  })();
-});
+// blog routes
+app.use('/blogs', blogRoutes); // prepended url, imported file
 
 // 404
 
