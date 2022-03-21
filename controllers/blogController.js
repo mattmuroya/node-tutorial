@@ -18,7 +18,7 @@ const blog_details = (req, res) => {
       const result = await Blog.findById(id);
       res.render('blogs/details', { title: 'Blog Details', blog: result }); // renders details.ejs from views folder
     } catch (err) {
-      console.log(err);
+      res.status(404).render('404', { title: 'Blog not found' });
     }
   })();
 };
