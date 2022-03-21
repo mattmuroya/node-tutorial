@@ -37,50 +37,8 @@ app.use((req, res, next) => {
 })
 
 app.use(express.static('public')); // anything inside 'public' folder will be accessible by the browser
-
+app.use(express.urlencoded({ extended: true })); // allows us to get form data from client
 app.use(morgan('dev')); // third party middleware
-
-// mongoose and mongo sandbox routes
-
-// app.get('/add-blog', (req, res) => { // post a new blog to the DB
-//   const blog = new Blog({
-//     title: 'new blog 2',
-//     snippet: 'about my new blog',
-//     body: 'more about my new blog',
-//   });
-
-//   (async () => {
-//     try {
-//       const result = await blog.save(); // saves to the database
-//       res.send(result); // send it to the browser (just to review it);
-//       console.log('blog saved');
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   })();
-// });
-
-// app.get('/all-blogs', (req, res) => {
-//   (async () =>  {
-//     try {
-//       const result = await Blog.find(); // find all blogs
-//       res.send(result);
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   })();
-// });
-
-// app.get('/single-blog', (req, res) => {
-//   (async () =>  {
-//     try {
-//       const result = await Blog.findById('62381606118e20fd9de2db4f'); // find a single blog (mongoose handles conversion to/from string)
-//       res.send(result);
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   })();
-// });
 
 // routes/renders
 
@@ -101,6 +59,42 @@ app.get('/blogs', (req, res) => {
     try {
       const result = await Blog.find().sort({ createdAt: -1 });
       res.render('index', { title: 'All Blogs', blogs: result }); // renders index.ejs from views folder
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+});
+
+app.post('/blogs', (req, res) => { // create new blogs
+  const blog = new Blog(req.body);
+  (async () => {
+    try {
+      const result = await blog.save();
+      res.redirect('./blogs');
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+});
+
+app.get('/blogs/:id', (req, res) => {
+  const id = req.params.id;
+  (async () => {
+    try {
+      const result = await Blog.findById(id);
+      res.render('details', { title: 'Blog Details', blog: result }); // renders details.ejs from views folder
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+})
+
+app.delete('/blogs/:id', (req, res) => {
+  const id = req.params.id;
+  (async () => {
+    try {
+      const result = await Blog.findByIdAndDelete(id);
+      res.json({ redirect: '/blogs' })
     } catch (err) {
       console.log(err);
     }
